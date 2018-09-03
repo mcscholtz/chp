@@ -1,19 +1,19 @@
-#ifndef __HEAP_H
-#define __HEAP_H
+#ifndef __HP_H
+#define __HP_H
 
 
-struct heap {
-    void (*push)(struct heap * self, int value);
-    int (*pop)(struct heap * self);
-    int (*peek)(struct heap * self);
-    int (*print)(struct heap * self);
+struct hp {
+    void (*push)(struct hp * self, int value);
+    int (*pop)(struct hp * self);
+    int (*peek)(struct hp * self);
+    int (*print)(struct hp * self);
     int _capacity;
     int _elemsize;
     void * _array;
     int _index;
 };
 
-struct heap * heap_new(int capacity, int elemsize);
-void heap_delete(struct heap * self);
+struct hp * hp_new(int capacity, int elemsize);
+void hp_delete(struct hp * self);
 
 #endif

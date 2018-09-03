@@ -3,7 +3,7 @@
 
 void hp_push_test(CuTest * tc)
 {
-    struct heap * h = heap_new(10,sizeof(int));
+    struct hp * h = hp_new(10,sizeof(int));
 
     h->push(h,1);
     CuAssertIntEquals(tc, 1, h->peek(h));
@@ -30,7 +30,7 @@ void hp_push_test(CuTest * tc)
     CuAssertIntEquals(tc, 11, h->peek(h));
     
     h->print(h);
-    heap_delete(h);
+    hp_delete(h);
 }
 
 

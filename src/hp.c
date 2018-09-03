@@ -5,21 +5,20 @@
 #include <stdio.h>
 #include <math.h>
 
-void heap_push(struct heap * self, int value);
-int heap_peek(struct heap * self);
-void heap_print(struct heap * self);
-int heap_pop(struct heap * self);
+void hp_push(struct hp * self, int value);
+int hp_peek(struct hp * self);
+void hp_print(struct hp * self);
+int hp_pop(struct hp * self);
 
 //Internal
-void heap_balance_bottom_up(struct heap * self, int index);
-void heap_balance_top_down(struct heap * self, int index);
-void heap_swap(struct heap * self, int index1, int index2);
-void * heap_at(struct heap * self, int index);
-int heap_subnode(struct heap * self, int index);
+void hp_balance_bottom_up(struct hp * self, int index);
+void hp_balance_top_down(struct hp * self, int index);
+void hp_swap(struct hp * self, int index1, int index2);
+int hp_subnode(struct hp * self, int index);
 
-struct heap * heap_new(int capacity, int elemsize)
+struct hp * hp_new(int capacity, int elemsize)
 {
-    struct heap * self = malloc(sizeof(struct heap));
+    struct hp * self = malloc(sizeof(struct hp));
     assert(self != NULL && "Out of memory");
     self->_elemsize = elemsize;
     self->_capacity = capacity;
@@ -27,37 +26,37 @@ struct heap * heap_new(int capacity, int elemsize)
     assert(self->_array != NULL && "Out of memory");
     self->_index = 1;
 
-    self->push = heap_push;
-    self->peek = heap_peek;
-    self->print = heap_print;
-    self->pop = heap_pop;
+    self->push = hp_push;
+    self->peek = hp_peek;
+    self->print = hp_print;
+    self->pop = hp_pop;
     return self;
 }
 
-void heap_delete(struct heap * self)
+void hp_delete(struct hp * self)
 {
-    assert(self != NULL && "The heap is NULL");
-    assert(self->_array != NULL && "The heap has no memory allocated");
+    assert(self != NULL && "The hp is NULL");
+    assert(self->_array != NULL && "The hp has no memory allocated");
 
     free(self->_array);
     free(self);
 }
 
-void heap_push(struct heap * self, int value)
+void hp_push(struct hp * self, int value)
 {
-    assert(self != NULL && "The heap is NULL");
-    assert(self->_index + 1 <= self->_capacity && "Heap is full");
+    assert(self != NULL && "The hp is NULL");
+    assert(self->_index + 1 <= self->_capacity && "hp is full");
 
     memcpy((char *)self->_array + self->_elemsize*self->_index,&value,self->_elemsize);
     
 
-    //then balance heap
-    heap_balance_bottom_up(self, self->_index);
+    //then balance hp
+    hp_balance_bottom_up(self, self->_index);
     self->_index++;
     return;
 }
 
-int heap_pop(struct heap * self)
+int hp_pop(struct hp * self)
 {
     int top = *(int *)((char *)self->_array + self->_elemsize*1);
     //int last = *(int *)((char *)self->_array + self->_elemsize*(self->_index-1));
@@ -66,21 +65,21 @@ int heap_pop(struct heap * self)
     //replace top item with last item.
     memcpy(hp_at(self, 1),hp_at(self, self->_index-1),self->_elemsize);
     self->_index--;
-    //recursivly balance heap from the 
-    heap_balance_top_down(self, 1);
+    //recursivly balance hp from the 
+    hp_balance_top_down(self, 1);
     return top;
 }
 
-int heap_peek(struct heap * self)
+int hp_peek(struct hp * self)
 {
-    assert(self != NULL && "The heap is NULL");
+    assert(self != NULL && "The hp is NULL");
     int head;
     memcpy(&head,(char *)self->_array + self->_elemsize*1,self->_elemsize);
     return head;
 }
 
 //top down
-void heap_balance_bottom_up(struct heap * self, int index)
+void hp_balance_bottom_up(struct hp * self, int index)
 {
     if(index == 1) return;
 
@@ -93,24 +92,24 @@ void heap_balance_bottom_up(struct heap * self, int index)
     
     //TODO: replace this with a function pointer to a comparison function
     if(val > pval){
-        heap_swap(self, index, p);
+        hp_swap(self, index, p);
     }
-    heap_balance_bottom_up(self, index-1);
+    hp_balance_bottom_up(self, index-1);
 }
 
-void heap_balance_top_down(struct heap * self, int index)
+void hp_balance_top_down(struct hp * self, int index)
 {
-    switch(heap_subnode(self, index))
+    switch(hp_subnode(self, index))
     {
         case 0: //left
          //   printf("left node\n");
-            heap_swap(self, index, index*2);
-            heap_balance_top_down(self, index*2);
+            hp_swap(self, index, index*2);
+            hp_balance_top_down(self, index*2);
             break;
         case 1: //right
         //    printf("right node\n");
-            heap_swap(self, index, index*2+1);
-            heap_balance_top_down(self, index*2+1);
+            hp_swap(self, index, index*2+1);
+            hp_balance_top_down(self, index*2+1);
             break;
         default:
          //   printf("last node\n");
@@ -118,7 +117,7 @@ void heap_balance_top_down(struct heap * self, int index)
     }      
 }
 
-int heap_subnode(struct heap * self, int index)
+int hp_subnode(struct hp * self, int index)
 {
     int left = index*2;
 
@@ -159,7 +158,7 @@ int heap_subnode(struct heap * self, int index)
 }
 
 //switch the values of index 1 and 2
-void heap_swap(struct heap * self, int index1, int index2)
+void hp_swap(struct hp * self, int index1, int index2)
 {
     //Use index 0 as tmp copy space
     memcpy((char *)self->_array + self->_elemsize*0,hp_at(self, index1),self->_elemsize);
@@ -168,9 +167,9 @@ void heap_swap(struct heap * self, int index1, int index2)
 }
 
 /* For debugging only */
-void heap_print(struct heap * self)
+void hp_print(struct hp * self)
 {
-    //print all the data in the heap
+    //print all the data in the hp
     for(int i = 1; i < self->_index; i++)
     {
         printf("[%d]->%d\n", i, *(int *)((char *)self->_array + self->_elemsize*i));

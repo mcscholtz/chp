@@ -3,7 +3,7 @@
 
 void hp_pop_test(CuTest * tc)
 {
-    struct heap * h = heap_new(10,sizeof(int));
+    struct hp * h = hp_new(10,sizeof(int));
 
     h->push(h,1);
     h->push(h,2);
@@ -80,7 +80,7 @@ void hp_pop_test(CuTest * tc)
     CuAssertIntEquals(tc,2,val);
     CuAssertIntEquals(tc,1, h->peek(h));
 
-    heap_delete(h);
+    hp_delete(h);
 }
 
 
