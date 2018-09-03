@@ -1,33 +1,63 @@
 #include "suite.h"
 #include "hp.h"
 
+void * comp(void * elem1, void * elem2);
+
+void * comp(void * elem1, void * elem2)
+{
+    printf("%d > %d\n", *(int*)elem1, *(int*)elem2);
+    if(*(int*)elem1 > *(int*)elem2){
+        return elem1;
+    }else{
+        return elem2;
+    }
+}
+
 void hp_push_test(CuTest * tc)
 {
-    struct hp * h = hp_new(10,sizeof(int));
-
-    h->push(h,1);
-    CuAssertIntEquals(tc, 1, h->peek(h));
+    struct hp * h = hp_new(10,sizeof(int), comp);
+    int peek, push;
     
-    h->push(h,2);
-    CuAssertIntEquals(tc, 2, h->peek(h));
+    push = 1;
+    h->push(h, &push); 
+    h->peek(h, &peek);
+    CuAssertIntEquals(tc, 1, peek);
     
-    h->push(h,3);
-    CuAssertIntEquals(tc, 3, h->peek(h));
+    push = 2;
+    h->push(h, &push);
+    h->peek(h, &peek);
+    h->print(h);
+    CuAssertIntEquals(tc, 2, peek);
+    
+    push = 3;
+    h->push(h, &push);
+    h->peek(h, &peek);
+    CuAssertIntEquals(tc, 3, peek);
 
-    h->push(h,7);
-    CuAssertIntEquals(tc, 7, h->peek(h));
+    push = 7;
+    h->push(h, &push);
+    h->peek(h, &peek);
+    CuAssertIntEquals(tc, 7, peek);
 
-    h->push(h,5);
-    CuAssertIntEquals(tc, 7, h->peek(h));
+    push = 5;
+    h->push(h, &push);
+    h->peek(h, &peek);
+    CuAssertIntEquals(tc, 7, peek);
 
-    h->push(h,4);
-    CuAssertIntEquals(tc, 7, h->peek(h));
+    push = 4;
+    h->push(h, &push);
+    h->peek(h, &peek);
+    CuAssertIntEquals(tc, 7, peek);
 
-    h->push(h,6);
-    CuAssertIntEquals(tc, 7, h->peek(h));
+    push = 6;
+    h->push(h, &push);
+    h->peek(h, &peek);
+    CuAssertIntEquals(tc, 7, peek);
 
-    h->push(h,11);
-    CuAssertIntEquals(tc, 11, h->peek(h));
+    push = 11;
+    h->push(h, &push);
+    h->peek(h, &peek);
+    CuAssertIntEquals(tc, 11, peek);
     
     h->print(h);
     hp_delete(h);

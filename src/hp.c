@@ -5,10 +5,10 @@
 #include <stdio.h>
 #include <math.h>
 
-void hp_push(struct hp * self, int value);
-int hp_peek(struct hp * self);
+void hp_push(struct hp * self, void * elem);
+void hp_peek(struct hp * self, void * head);
 void hp_print(struct hp * self);
-int hp_pop(struct hp * self);
+void hp_pop(struct hp * self, void * head);
 
 //Internal
 void hp_balance_bottom_up(struct hp * self, int index);
@@ -16,7 +16,7 @@ void hp_balance_top_down(struct hp * self, int index);
 void hp_swap(struct hp * self, int index1, int index2);
 int hp_subnode(struct hp * self, int index);
 
-struct hp * hp_new(int capacity, int elemsize)
+struct hp * hp_new(int capacity, int elemsize, void * (*compare)(void * elem1, void * elem2))
 {
     struct hp * self = malloc(sizeof(struct hp));
     assert(self != NULL && "Out of memory");
@@ -30,6 +30,7 @@ struct hp * hp_new(int capacity, int elemsize)
     self->peek = hp_peek;
     self->print = hp_print;
     self->pop = hp_pop;
+    self->compare = compare;
     return self;
 }
 
@@ -42,12 +43,12 @@ void hp_delete(struct hp * self)
     free(self);
 }
 
-void hp_push(struct hp * self, int value)
+void hp_push(struct hp * self, void * elem)
 {
     assert(self != NULL && "The hp is NULL");
     assert(self->_index + 1 <= self->_capacity && "hp is full");
 
-    memcpy((char *)self->_array + self->_elemsize*self->_index,&value,self->_elemsize);
+    memcpy(ELEM(self,self->_index), elem, self->_elemsize);
     
 
     //then balance hp
@@ -56,44 +57,41 @@ void hp_push(struct hp * self, int value)
     return;
 }
 
-int hp_pop(struct hp * self)
+void hp_pop(struct hp * self, void * head)
 {
-    int top = *(int *)((char *)self->_array + self->_elemsize*1);
-    //int last = *(int *)((char *)self->_array + self->_elemsize*(self->_index-1));
-    //remove topp item.
+    //get the head
+    memcpy(head, ELEM(self,1), self->_elemsize);
 
-    //replace top item with last item.
+    //replace top item with last item
     memcpy(hp_at(self, 1),hp_at(self, self->_index-1),self->_elemsize);
     self->_index--;
-    //recursivly balance hp from the 
+    
+    //recursivly balance the tree from the top down
     hp_balance_top_down(self, 1);
-    return top;
 }
 
-int hp_peek(struct hp * self)
+void hp_peek(struct hp * self, void * head)
 {
     assert(self != NULL && "The hp is NULL");
-    int head;
-    memcpy(&head,(char *)self->_array + self->_elemsize*1,self->_elemsize);
-    return head;
+    memcpy(head, ELEM(self,1), self->_elemsize);
 }
 
 //top down
 void hp_balance_bottom_up(struct hp * self, int index)
 {
+    //Reached the top of the tree
     if(index == 1) return;
 
-    //start at the last node and work our way up
-  //  #define PARENT_INDEX(index) (floor(index/2))
     int p = floor(index/2);
-    int val = *(int *)((char *)self->_array + self->_elemsize*index);
-    int pval = *(int *)((char *)self->_array + self->_elemsize*p);
-    //printf("val: %d, pval: %d\n",val, pval);
+
+    //call custom compare function, the node returned will be the one passed up the tree
+    void * greater = self->compare(ELEM(self, index), ELEM(self,p));
     
-    //TODO: replace this with a function pointer to a comparison function
-    if(val > pval){
+    //if the greater pointer is not the same as the current pointer, switch them
+    if(greater == ELEM(self, index)){
         hp_swap(self, index, p);
     }
+
     hp_balance_bottom_up(self, index-1);
 }
 
@@ -102,17 +100,14 @@ void hp_balance_top_down(struct hp * self, int index)
     switch(hp_subnode(self, index))
     {
         case 0: //left
-         //   printf("left node\n");
             hp_swap(self, index, index*2);
             hp_balance_top_down(self, index*2);
             break;
         case 1: //right
-        //    printf("right node\n");
             hp_swap(self, index, index*2+1);
             hp_balance_top_down(self, index*2+1);
             break;
         default:
-         //   printf("last node\n");
             break;
     }      
 }
@@ -126,29 +121,27 @@ int hp_subnode(struct hp * self, int index)
         return -1;
     }
 
-    int val = *(int *)((char *)self->_array + self->_elemsize*index);
-    int left_val = *(int *)((char *)self->_array + self->_elemsize*left);
-   // printf("current: %d\n", val);
-   // printf("left: %d\n", left_val);
     if(left + 1 > self->_index){
         //there is no right node, only need to check left
-        if(left_val > val){
+        void * greater = self->compare(ELEM(self,left), ELEM(self, index));
+        if(greater == ELEM(self,left)){
             return 0;
         }else{
             return -1;
         } 
     }else{
         //check both
-        int right_val = *(int *)((char *)self->_array + self->_elemsize*(left+1));
-     //   printf("right: %d\n", right_val);
-        if(left_val > right_val){
-            if(left_val > val){
+        void * greater = self->compare(ELEM(self,left), ELEM(self, (left+1)));
+        if(greater == ELEM(self,left)){
+            greater = self->compare(ELEM(self,left), ELEM(self, index));
+            if(greater == ELEM(self,left)){
                 return 0;
             }else{
                 return -1;
             }
         }else{
-            if(right_val > val){
+            greater = self->compare(ELEM(self,(left+1)), ELEM(self, index));
+            if(greater == ELEM(self,(left+1))){
                 return 1;
             }else{
                 return -1;
@@ -161,9 +154,9 @@ int hp_subnode(struct hp * self, int index)
 void hp_swap(struct hp * self, int index1, int index2)
 {
     //Use index 0 as tmp copy space
-    memcpy((char *)self->_array + self->_elemsize*0,hp_at(self, index1),self->_elemsize);
-    memcpy(hp_at(self, index1),hp_at(self, index2),self->_elemsize);
-    memcpy(hp_at(self, index2),(char *)self->_array + self->_elemsize*0,self->_elemsize);
+    memcpy(ELEM(self, 0), hp_at(self, index1), self->_elemsize);
+    memcpy(hp_at(self, index1), hp_at(self, index2), self->_elemsize);
+    memcpy(hp_at(self, index2), ELEM(self, 0), self->_elemsize);
 }
 
 /* For debugging only */
@@ -172,6 +165,6 @@ void hp_print(struct hp * self)
     //print all the data in the hp
     for(int i = 1; i < self->_index; i++)
     {
-        printf("[%d]->%d\n", i, *(int *)((char *)self->_array + self->_elemsize*i));
+        printf("[%d]->%d\n", i, *(int *)(ELEM(self, i)));
     }
 }
