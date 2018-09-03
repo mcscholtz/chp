@@ -14,7 +14,7 @@ void hp_pop(struct hp * self, void * head);
 void hp_balance_bottom_up(struct hp * self, int index);
 void hp_balance_top_down(struct hp * self, int index);
 void hp_swap(struct hp * self, int index1, int index2);
-int hp_subnode(struct hp * self, int index);
+int hp_select_subnode(struct hp * self, int index);
 
 struct hp * hp_new(int capacity, int elemsize, void * (*compare)(void * elem1, void * elem2))
 {
@@ -48,10 +48,10 @@ void hp_push(struct hp * self, void * elem)
     assert(self != NULL && "The hp is NULL");
     assert(self->_index + 1 <= self->_capacity && "hp is full");
 
+    //add node at the bottom of the tree
     memcpy(ELEM(self,self->_index), elem, self->_elemsize);
     
-
-    //then balance hp
+    //then balance the tree recursively
     hp_balance_bottom_up(self, self->_index);
     self->_index++;
     return;
@@ -66,7 +66,7 @@ void hp_pop(struct hp * self, void * head)
     memcpy(hp_at(self, 1),hp_at(self, self->_index-1),self->_elemsize);
     self->_index--;
     
-    //recursivly balance the tree from the top down
+    //recursively balance the tree from the top down
     hp_balance_top_down(self, 1);
 }
 
@@ -79,7 +79,7 @@ void hp_peek(struct hp * self, void * head)
 //top down
 void hp_balance_bottom_up(struct hp * self, int index)
 {
-    //Reached the top of the tree
+    //reached the top of the tree
     if(index == 1) return;
 
     int p = floor(index/2);
@@ -92,12 +92,13 @@ void hp_balance_bottom_up(struct hp * self, int index)
         hp_swap(self, index, p);
     }
 
+    //balance the tree from the bottom up
     hp_balance_bottom_up(self, index-1);
 }
 
 void hp_balance_top_down(struct hp * self, int index)
 {
-    switch(hp_subnode(self, index))
+    switch(hp_select_subnode(self, index))
     {
         case 0: //left
             hp_swap(self, index, index*2);
@@ -112,7 +113,7 @@ void hp_balance_top_down(struct hp * self, int index)
     }      
 }
 
-int hp_subnode(struct hp * self, int index)
+int hp_select_subnode(struct hp * self, int index)
 {
     int left = index*2;
 
@@ -153,7 +154,7 @@ int hp_subnode(struct hp * self, int index)
 //switch the values of index 1 and 2
 void hp_swap(struct hp * self, int index1, int index2)
 {
-    //Use index 0 as tmp copy space
+    //Use index 0 as tmp copy space since it is already the correct size and won't cost an allocation
     memcpy(ELEM(self, 0), hp_at(self, index1), self->_elemsize);
     memcpy(hp_at(self, index1), hp_at(self, index2), self->_elemsize);
     memcpy(hp_at(self, index2), ELEM(self, 0), self->_elemsize);
