@@ -35,11 +35,12 @@ foreach(file ${files})
     ${TEST_SOURCE_DIR}
   )
   
-  #Link libraries
-  TARGET_LINK_LIBRARIES( ${TEST_EXE} ${PROJECT_LIB} ${TEST_LIB} )
+#Link libraries
+ #set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-pg")
+TARGET_LINK_LIBRARIES( ${TEST_EXE} ${PROJECT_LIB} ${TEST_LIB})
   
-  #Add tests
-  add_test(
+#Add tests
+add_test(
     NAME ${TEST_EXE}
     COMMAND ${TEST_EXE})
 endforeach()

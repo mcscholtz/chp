@@ -5,7 +5,6 @@ void * comp(void * elem1, void * elem2);
 
 void * comp(void * elem1, void * elem2)
 {
-    printf("%d > %d\n", *(int*)elem1, *(int*)elem2);
     if(*(int*)elem1 > *(int*)elem2){
         return elem1;
     }else{
@@ -26,7 +25,7 @@ void hp_push_test(CuTest * tc)
     push = 2;
     h->push(h, &push);
     h->peek(h, &peek);
-    h->print(h);
+   // h->print(h);
     CuAssertIntEquals(tc, 2, peek);
     
     push = 3;
@@ -59,7 +58,7 @@ void hp_push_test(CuTest * tc)
     h->peek(h, &peek);
     CuAssertIntEquals(tc, 11, peek);
     
-    h->print(h);
+  //  h->print(h);
     hp_delete(h);
 }
 

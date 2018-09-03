@@ -1,4 +1,4 @@
-#include "hp_p.h"
+#include "hp.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +11,7 @@ void hp_print(struct hp * self);
 void hp_pop(struct hp * self, void * head);
 
 //Internal
+#define ELEM(self, index) ((char *)self->_array + self->_elemsize*(index))
 void hp_balance_bottom_up(struct hp * self, int index);
 void hp_balance_top_down(struct hp * self, int index);
 void hp_swap(struct hp * self, int index1, int index2);
@@ -28,7 +29,6 @@ struct hp * hp_new(int capacity, int elemsize, void * (*compare)(void * elem1, v
 
     self->push = hp_push;
     self->peek = hp_peek;
-    self->print = hp_print;
     self->pop = hp_pop;
     self->compare = compare;
     return self;
@@ -36,18 +36,20 @@ struct hp * hp_new(int capacity, int elemsize, void * (*compare)(void * elem1, v
 
 void hp_delete(struct hp * self)
 {
-    assert(self != NULL && "The hp is NULL");
-    assert(self->_array != NULL && "The hp has no memory allocated");
-
+    #ifdef HEAP_ASSERTION
+        assert(self != NULL && "The heap is NULL");
+        assert(self->_array != NULL && "The heap has no memory allocated");
+    #endif
     free(self->_array);
     free(self);
 }
 
 void hp_push(struct hp * self, void * elem)
 {
-    assert(self != NULL && "The hp is NULL");
-    assert(self->_index + 1 <= self->_capacity && "hp is full");
-
+    #ifdef HEAP_ASSERTION
+        assert(self != NULL && "The heap is NULL");
+        assert(self->_index + 1 <= self->_capacity && "The heap is full");
+    #endif
     //add node at the bottom of the tree
     memcpy(ELEM(self,self->_index), elem, self->_elemsize);
     
@@ -59,11 +61,18 @@ void hp_push(struct hp * self, void * elem)
 
 void hp_pop(struct hp * self, void * head)
 {
+    #ifdef HEAP_ASSERTION
+        assert(self != NULL && "The heap is NULL");
+        assert(self->_index != 1 && "The heap is empty");
+    #endif
+    if(self->_index == 1){
+        return;
+    }
     //get the head
     memcpy(head, ELEM(self,1), self->_elemsize);
 
     //replace top item with last item
-    memcpy(hp_at(self, 1),hp_at(self, self->_index-1),self->_elemsize);
+    memcpy(ELEM(self, 1),ELEM(self, self->_index-1),self->_elemsize);
     self->_index--;
     
     //recursively balance the tree from the top down
@@ -72,7 +81,9 @@ void hp_pop(struct hp * self, void * head)
 
 void hp_peek(struct hp * self, void * head)
 {
-    assert(self != NULL && "The hp is NULL");
+    #ifdef HEAP_ASSERTION
+        assert(self != NULL && "The heap is NULL");
+    #endif
     memcpy(head, ELEM(self,1), self->_elemsize);
 }
 
@@ -82,7 +93,7 @@ void hp_balance_bottom_up(struct hp * self, int index)
     //reached the top of the tree
     if(index == 1) return;
 
-    int p = floor(index/2);
+    int p = (int)floor(index/2);
 
     //call custom compare function, the node returned will be the one passed up the tree
     void * greater = self->compare(ELEM(self, index), ELEM(self,p));
@@ -155,17 +166,7 @@ int hp_select_subnode(struct hp * self, int index)
 void hp_swap(struct hp * self, int index1, int index2)
 {
     //Use index 0 as tmp copy space since it is already the correct size and won't cost an allocation
-    memcpy(ELEM(self, 0), hp_at(self, index1), self->_elemsize);
-    memcpy(hp_at(self, index1), hp_at(self, index2), self->_elemsize);
-    memcpy(hp_at(self, index2), ELEM(self, 0), self->_elemsize);
-}
-
-/* For debugging only */
-void hp_print(struct hp * self)
-{
-    //print all the data in the hp
-    for(int i = 1; i < self->_index; i++)
-    {
-        printf("[%d]->%d\n", i, *(int *)(ELEM(self, i)));
-    }
+    memcpy(ELEM(self, 0), ELEM(self, index1), self->_elemsize);
+    memcpy(ELEM(self, index1), ELEM(self, index2), self->_elemsize);
+    memcpy(ELEM(self, index2), ELEM(self, 0), self->_elemsize);
 }

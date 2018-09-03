@@ -32,7 +32,7 @@ void hp_pop_test(CuTest * tc)
     h->push(h, &push);
     push = 11;
     h->push(h, &push);
-    h->print(h);
+   // h->print(h);
     //printf("--------\n");
     int pop, peek;
     h->pop(h, &pop);
