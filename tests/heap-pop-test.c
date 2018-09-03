@@ -1,7 +1,7 @@
 #include "suite.h"
-#include "heap.h"
+#include "hp.h"
 
-void heap_create_test(CuTest * tc)
+void hp_pop_test(CuTest * tc)
 {
     struct heap * h = heap_new(10,sizeof(int));
 
@@ -84,4 +84,4 @@ void heap_create_test(CuTest * tc)
 }
 
 
-int main(void) { return execute(heap_create_test);}
+int main(void) { return execute(hp_pop_test);}

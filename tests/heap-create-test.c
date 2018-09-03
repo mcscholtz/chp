@@ -1,5 +1,5 @@
 #include "suite.h"
-#include "heap.h"
+#include "hp.h"
 
 void heap_create_test(CuTest * tc)
 {

@@ -1,4 +1,4 @@
-#include "heap.h"
+#include "hp_p.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,7 +64,7 @@ int heap_pop(struct heap * self)
     //remove topp item.
 
     //replace top item with last item.
-    memcpy(heap_at(self, 1),heap_at(self, self->_index-1),self->_elemsize);
+    memcpy(hp_at(self, 1),hp_at(self, self->_index-1),self->_elemsize);
     self->_index--;
     //recursivly balance heap from the 
     heap_balance_top_down(self, 1);
@@ -162,15 +162,9 @@ int heap_subnode(struct heap * self, int index)
 void heap_swap(struct heap * self, int index1, int index2)
 {
     //Use index 0 as tmp copy space
-    memcpy((char *)self->_array + self->_elemsize*0,heap_at(self, index1),self->_elemsize);
-    memcpy(heap_at(self, index1),heap_at(self, index2),self->_elemsize);
-    memcpy(heap_at(self, index2),(char *)self->_array + self->_elemsize*0,self->_elemsize);
-}
-
-//TODO: Make inline function
-void * heap_at(struct heap * self, int index)
-{
-    return ((char *)self->_array + self->_elemsize*index);
+    memcpy((char *)self->_array + self->_elemsize*0,hp_at(self, index1),self->_elemsize);
+    memcpy(hp_at(self, index1),hp_at(self, index2),self->_elemsize);
+    memcpy(hp_at(self, index2),(char *)self->_array + self->_elemsize*0,self->_elemsize);
 }
 
 /* For debugging only */

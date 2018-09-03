@@ -6,7 +6,7 @@ include(Project.cmake)
 
 #Project Sources
 set (PROJECT_SOURCES 
-    ${PROJECT_SOURCE_DIR}/heap.c
+    ${PROJECT_SOURCE_DIR}/hp.c
 )
 
 #Add the library as static
